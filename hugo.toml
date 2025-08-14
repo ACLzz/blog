@@ -1,0 +1,4 @@
+baseURL = 'https://blog.aclz.dev/'
+languageCode = 'en-us'
+title = 'Digital Nerd Diary'
+theme = ["PaperMod"]

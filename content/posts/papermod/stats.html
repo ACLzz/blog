@@ -5,10 +5,28 @@ date: 2025-08-14
 draft: false
 weight: 1
 ---
-<div>Тут знаходяться всі можливі графіки щоб трекати мій прогрес</div>
 
-<div>
-    <h1>Доставки</h1>
-    <iframe src="https://www.beeminder.com/widget?slug=deliveries&username=addictedfreak" height="185px" width="230px"
-        frameborder="0px" style="border: none;"></iframe>
-</div>
+<head>
+    <style>
+        .beeminder-widget {
+            border: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div>Тут знаходяться всі можливі графіки щоб трекати мій прогрес</div>
+
+    <div>
+        <h1>Доставки</h1>
+        <iframe src="https://www.beeminder.com/widget?slug=deliveries&username=addictedfreak" height="185px"
+            width="230px" frameborder="0px" class="beeminder-widget"></iframe>
+    </div>
+
+    <div>
+        <h1>Ожиріння</h1>
+        <h2>Пробіжки</h2>
+        <iframe src="https://www.beeminder.com/widget?slug=runs&username=addictedfreak" height="185px" width="230px"
+            frameborder="0px" class="beeminder-widget"></iframe>
+    </div>
+</body>

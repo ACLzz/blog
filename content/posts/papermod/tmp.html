@@ -8,27 +8,27 @@ weight: 1
 
 <div>
     <h1>Доставки</h1>
+    <div id="deliveries-legend-container"></div>
     <canvas id="deliveriesChart"></canvas>
     <h1>Ожиріння</h1>
     <h2>Вага</h2>
+    <div id="weight-legend-container"></div>
     <canvas id="weightChart"></canvas>
     <h2>Пробіжки</h2>
+    <div id="runs-legend-container"></div>
     <canvas id="runsChart"></canvas>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+<!-- deliveries chart -->
 <script>
-    var a;
-
-    // deliveries chart
     const successDayColor = 'rgba(85, 255, 79, 0.55)';
     const failedDayColor = 'rgba(255, 0, 0, 0.61)';
     fetch('/deliveries.json').
         then(resp => resp.json()).
         then(data => {
             const ctx = document.getElementById('deliveriesChart');
-            a = data;
 
             const colors = [];
             Object.values(data).forEach(isSuccessDay => {
@@ -64,18 +64,32 @@ weight: 1
                                 label: deliveriesTooltipCallback,
                             }
                         }
+                    },
+                    htmlLegend: {
+                        containerID: 'deliveries-legend-container'
                     }
-                }
+                },
+                plugins: [{
+                    id: 'htmlLegend',
+                    afterUpdate(chart, args, options) {
+                        const container = document.getElementById('deliveries-legend-container');
+                        var dataset = chart.data.datasets[0].backgroundColor;
+                        var [successes, fails] = calcSuccessAndFailsDaysOfDeliveries(dataset, dataset.length - 1);
+
+                        container.innerHTML = `<p>
+                        <div>Днів без доставок: ${successes}</div>
+                        <div>Днів з доставками: ${fails}</div>
+                        </p>`;
+                    }
+                }]
             });
         });
 
-    function deliveriesTooltipCallback(context) {
-        const index = context.dataIndex;
-
+    function calcSuccessAndFailsDaysOfDeliveries(colors, index) {
         var successes = 0;
         var fails = 0;
         for (var i = 0; i <= index; i++) {
-            switch (context.dataset.backgroundColor[i]) {
+            switch (colors[i]) {
                 case successDayColor:
                     successes++;
                     break;
@@ -84,6 +98,13 @@ weight: 1
                     break;
             }
         }
+
+        return [successes, fails]
+    }
+    function deliveriesTooltipCallback(context) {
+        const index = context.dataIndex;
+
+        var [successes, fails] = calcSuccessAndFailsDaysOfDeliveries(context.dataset.backgroundColor, index);
 
         var dayDesc = "";
         switch (context.dataset.backgroundColor[context.dataIndex]) {
@@ -101,8 +122,10 @@ weight: 1
             `Доставок: ${fails}`
         ]
     }
+</script>
 
-    // weight chart
+<!-- weight chart -->
+<script>
     fetch('/weight.json').
         then(resp => resp.json()).
         then(data => {
@@ -128,12 +151,34 @@ weight: 1
                         legend: {
                             display: false,
                         }
+                    },
+                    htmlLegend: {
+                        containerID: 'weight-legend-container'
                     }
-                }
+                },
+                plugins: [{
+                    id: 'htmlLegend',
+                    afterUpdate(chart, args, options) {
+                        const container = document.getElementById('weight-legend-container');
+                        var dataset = chart.data.datasets[0].data;
+                        var lastIndex = dataset.length - 1;
+
+                        container.innerHTML = `<p>
+                        <div>Початкова вага: ${dataset[0]}</div>
+                        <div>Поточна вага: ${dataset[lastIndex]}</div>
+                        <!-- 
+                            <div>Зміна за останні 7 днів: ${dataset[lastIndex - 7] - dataset[lastIndex]}</div>
+                            <div>Зміна за останній місяць: ${dataset[lastIndex - 28] - dataset[lastIndex]}</div>
+                        -->
+                        </p>`;
+                    }
+                }]
             });
         });
+</script>
 
-    // runs chart
+<!-- runs chart -->
+<script>
     const runColor = 'rgba(85, 255, 79, 0.55)';
     const freeColor = 'rgba(197, 197, 197, 0.55)';
     const missedColor = 'rgba(255, 0, 0, 0.61)';
@@ -185,10 +230,43 @@ weight: 1
                                 label: runsTooltipCallback,
                             }
                         }
+                    },
+                    htmlLegend: {
+                        containerID: 'runs-legend-container'
                     }
-                }
+                },
+                plugins: [{
+                    id: 'htmlLegend',
+                    afterUpdate(chart, args, options) {
+                        const container = document.getElementById('runs-legend-container');
+                        var dataset = chart.data.datasets[0].backgroundColor;
+                        var [successes, fails] = calcSuccessAndFailsDaysOfRuns(dataset, dataset.length - 1);
+
+                        container.innerHTML = `<p>
+                        <div>Пробіжок: ${successes}</div>
+                        <div>Пропущених пробіжок: ${fails}</div>
+                        </p>`;
+                    }
+                }]
             });
         });
+
+    function calcSuccessAndFailsDaysOfRuns(colors, index) {
+        var successes = 0;
+        var fails = 0;
+        for (var i = 0; i <= index; i++) {
+            switch (colors[i]) {
+                case runColor:
+                    successes++;
+                    break;
+                case missedColor:
+                    fails++;
+                    break;
+            }
+        }
+
+        return [successes, fails]
+    }
 
     function runsTooltipCallback(context) {
         const index = context.dataIndex;

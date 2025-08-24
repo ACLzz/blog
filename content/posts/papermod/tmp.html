@@ -1,0 +1,228 @@
+---
+title: "TMP"
+summary: "TMP"
+date: 2025-08-14
+draft: false
+weight: 1
+---
+
+<div>
+    <h1>Доставки</h1>
+    <canvas id="deliveriesChart"></canvas>
+    <h1>Ожиріння</h1>
+    <h2>Вага</h2>
+    <canvas id="weightChart"></canvas>
+    <h2>Пробіжки</h2>
+    <canvas id="runsChart"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    var a;
+
+    // deliveries chart
+    const successDayColor = 'rgba(85, 255, 79, 0.55)';
+    const failedDayColor = 'rgba(255, 0, 0, 0.61)';
+    fetch('/deliveries.json').
+        then(resp => resp.json()).
+        then(data => {
+            const ctx = document.getElementById('deliveriesChart');
+            a = data;
+
+            const colors = [];
+            Object.values(data).forEach(isSuccessDay => {
+                if (isSuccessDay) {
+                    colors.push(successDayColor);
+                } else {
+                    colors.push(failedDayColor);
+                }
+            });
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(data),
+                    datasets: [{
+                        data: new Array(Object.keys(data).length).fill(1),
+                        backgroundColor: colors,
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            display: false
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            displayColors: false,
+                            callbacks: {
+                                label: deliveriesTooltipCallback,
+                            }
+                        }
+                    }
+                }
+            });
+        });
+
+    function deliveriesTooltipCallback(context) {
+        const index = context.dataIndex;
+
+        var successes = 0;
+        var fails = 0;
+        for (var i = 0; i <= index; i++) {
+            switch (context.dataset.backgroundColor[i]) {
+                case successDayColor:
+                    successes++;
+                    break;
+                case failedDayColor:
+                    fails++;
+                    break;
+            }
+        }
+
+        var dayDesc = "";
+        switch (context.dataset.backgroundColor[context.dataIndex]) {
+            case successDayColor:
+                dayDesc = "День без доставок :)";
+                break;
+            case failedDayColor:
+                dayDesc = "День з доставкою :(";
+                break;
+        }
+
+        return [
+            dayDesc,
+            `Днів без доставок: ${successes}`,
+            `Доставок: ${fails}`
+        ]
+    }
+
+    // weight chart
+    fetch('/weight.json').
+        then(resp => resp.json()).
+        then(data => {
+            const ctx = document.getElementById('weightChart');
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: Object.keys(data),
+                    datasets: [{
+                        label: 'Kgs',
+                        data: Object.values(data),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            min: 60.0
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false,
+                        }
+                    }
+                }
+            });
+        });
+
+    // runs chart
+    const runColor = 'rgba(85, 255, 79, 0.55)';
+    const freeColor = 'rgba(197, 197, 197, 0.55)';
+    const missedColor = 'rgba(255, 0, 0, 0.61)';
+
+    fetch('/runs.json').
+        then(resp => resp.json()).
+        then(data => {
+            const ctx = document.getElementById('runsChart');
+
+            const colors = [];
+            Object.values(data).forEach(type => {
+                switch (type) {
+                    case "run":
+                        colors.push(runColor)
+                        break;
+                    case "free":
+                        colors.push(freeColor)
+                        break;
+                    case "missed":
+                        colors.push(missedColor)
+                        break;
+                    default:
+                        console.error("unknown day type: " + day.type)
+                }
+            });
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(data),
+                    datasets: [{
+                        data: new Array(Object.keys(data).length).fill(1),
+                        backgroundColor: colors,
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            display: false
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            displayColors: false,
+                            callbacks: {
+                                label: runsTooltipCallback,
+                            }
+                        }
+                    }
+                }
+            });
+        });
+
+    function runsTooltipCallback(context) {
+        const index = context.dataIndex;
+
+        var runs = 0;
+        var fails = 0;
+        for (var i = 0; i <= index; i++) {
+            switch (context.dataset.backgroundColor[i]) {
+                case runColor:
+                    runs++;
+                    break;
+                case missedColor:
+                    fails++;
+                    break;
+            }
+        }
+
+        var dayDesc = "";
+        switch (context.dataset.backgroundColor[index]) {
+            case runColor:
+                dayDesc = "День з пробіжкою :)";
+                break;
+            case freeColor:
+                dayDesc = "Вільний день :|";
+                break;
+            case missedColor:
+                dayDesc = "Пропущений день :(";
+                break;
+        }
+
+        return [
+            dayDesc,
+            `Пробіжок: ${runs}`,
+            `Провалів: ${fails}`
+        ]
+    }
+</script>

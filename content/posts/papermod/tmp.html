@@ -164,17 +164,26 @@ weight: 1
                         var lastIndex = dataset.length - 1;
 
                         container.innerHTML = `<p>
-                        <div>Початкова вага: ${dataset[0]}</div>
-                        <div>Поточна вага: ${dataset[lastIndex]}</div>
+                        <div>Початкова вага: ${dataset[0]}kg</div>
+                        <div>Поточна вага: ${dataset[lastIndex]}kg</div>
                         <!-- 
-                            <div>Зміна за останні 7 днів: ${dataset[lastIndex - 7] - dataset[lastIndex]}</div>
-                            <div>Зміна за останній місяць: ${dataset[lastIndex - 28] - dataset[lastIndex]}</div>
+                            <div>Зміна за останні 7 днів: ${getWeightDiff(dataset[lastIndex - 7], dataset[lastIndex])}kg</div>
+                            <div>Зміна за останній місяць: ${getWeightDiff(dataset[lastIndex - 28], dataset[lastIndex])}kg</div>
                         -->
                         </p>`;
                     }
                 }]
             });
         });
+
+    function getWeightDiff(a, b) {
+        var diff = a - b;
+        var diffSign = "-"
+        if (diff < 0) {
+            diffSign = "+"
+        }
+        return `${diffSign}${diff}`
+    }
 </script>
 
 <!-- runs chart -->
